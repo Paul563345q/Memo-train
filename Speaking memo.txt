@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprachmemo Transkribierung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+
+        button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+
+        #transcription {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            min-height: 100px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Sprachmemo Transkribierung</h1>
+        <button id="start-button">Sprache aufnehmen</button>
+        <div id="transcription">Hier erscheint der transkribierte Text...</div>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('start-button');
+        const transcriptionDiv = document.getElementById('transcription');
+        
+        // Überprüfen, ob die Web Speech API verfügbar ist
+        if (!('webkitSpeechRecognition' in window)) {
+            transcriptionDiv.innerHTML = "Web Speech API wird von diesem Browser nicht unterstützt.";
+            startButton.disabled = true;
+        } else {
+            // Instanz der Spracherkennungs-API erstellen
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'de-DE'; // Sprache auf Deutsch setzen
+            recognition.continuous = true; // Erlaube fortlaufende Erkennung
+            recognition.interimResults = true; // Ergebnisse während der Erkennung anzeigen
+
+            recognition.onstart = function() {
+                startButton.disabled = true; // Button deaktivieren, wenn die Aufnahme läuft
+                transcriptionDiv.innerHTML = "Spracherkennung läuft..."; // Zeige Status an
+            };
+
+            recognition.onresult = function(event) {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                transcriptionDiv.innerHTML = transcript; // Transkribierten Text anzeigen
+            };
+
+            recognition.onerror = function(event) {
+                transcriptionDiv.innerHTML = "Fehler bei der Spracherkennung: " + event.error;
+                startButton.disabled = false; // Button aktivieren, wenn ein Fehler auftritt
+            };
+
+            recognition.onend = function() {
+                startButton.disabled = false; // Button wieder aktivieren, wenn die Erkennung endet
+            };
+
+            // Wenn der Button geklickt wird, Spracherkennung starten
+            startButton.onclick = function() {
+                recognition.start(); // Spracherkennung starten
+            };
+        }
+    </script>
+
+</body>
+</html>
